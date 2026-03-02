@@ -178,7 +178,20 @@ def load_live_site(base_url: str) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, 
     domain_host = urlparse(base_url).netloc.lower()
 
     session = requests.Session()
-    session.headers.update({"User-Agent": "AethelstanBot/1.0"})
+    session.headers.update({
+        # Browser-like UA. (This is the single biggest unblocker.)
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/122.0.0.0 Safari/537.36"
+        ),
+        # These help a lot of CDNs decide you're "normal".
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-GB,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "close",
+        "Upgrade-Insecure-Requests": "1",
+    })
 
     while queue and len(visited) < MAX_PAGES:
         url, depth = queue.pop(0)
