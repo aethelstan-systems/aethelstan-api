@@ -14,6 +14,11 @@ class ScanRequest(BaseModel):
     domain: str
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 @app.post("/scan")
 def scan(
     request: ScanRequest,
