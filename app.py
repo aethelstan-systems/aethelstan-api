@@ -7,7 +7,10 @@ from typing import Optional
 
 from engine import run_scan
 
-app = FastAPI(title="Aethelstan API")
+app = FastAPI(
+    title="Aethelstan API",
+    version="1.0.0"
+)
 
 API_KEY = os.getenv("API_KEY")
 
@@ -15,10 +18,9 @@ API_KEY = os.getenv("API_KEY")
 # Rate Limiting Config
 # -------------------------
 
-RATE_LIMIT = 10          # requests
-RATE_WINDOW = 60         # seconds
+RATE_LIMIT = 10
+RATE_WINDOW = 60
 
-# Store request timestamps per IP
 request_log = defaultdict(lambda: deque())
 
 
@@ -26,35 +28,37 @@ class ScanRequest(BaseModel):
     domain: str
 
 
-@app.get("/health")
+# =========================
+# v1 ROUTES
+# =========================
+
+@app.get("/v1/health")
 def health():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "version": "v1"
+    }
 
 
-@app.post("/scan")
+@app.post("/v1/scan")
 def scan(
     request: ScanRequest,
     request_obj: Request,
     x_api_key: Optional[str] = Header(None)
 ):
-    # -------------------------
     # API Key Check
-    # -------------------------
     if API_KEY is None:
         raise HTTPException(status_code=500)
 
     if x_api_key != API_KEY:
         raise HTTPException(status_code=403)
 
-    # -------------------------
     # Rate Limiting
-    # -------------------------
     client_ip = request_obj.client.host
     now = time.time()
 
     timestamps = request_log[client_ip]
 
-    # Remove timestamps outside window
     while timestamps and now - timestamps[0] > RATE_WINDOW:
         timestamps.popleft()
 
@@ -63,9 +67,6 @@ def scan(
 
     timestamps.append(now)
 
-    # -------------------------
-    # Execute Scan
-    # -------------------------
     result = run_scan(request.domain)
 
     return result
