@@ -3,6 +3,7 @@ import time
 from collections import defaultdict, deque
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 from typing import Optional
 from engine import run_scan
@@ -48,7 +49,7 @@ def health():
 
 
 @app.post("/v1/scan")
-def scan(
+async def scan(
     request: ScanRequest,
     request_obj: Request
 ):
@@ -72,7 +73,7 @@ def scan(
     # Run diagnostic
     # -------------------------
     try:
-        result = run_scan(request.domain)
+        result = await run_in_threadpool(run_scan, request.domain)
         return result
 
     except Exception as e:
