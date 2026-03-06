@@ -173,7 +173,12 @@ def load_live_site(base_url: str) -> Tuple[Dict[str, Dict[str, Any]], Dict[str, 
     crawl_graph: Dict[str, List[str]] = {}
 
     visited: set[str] = set()
-    queue: List[Tuple[str, int]] = [(base_url, 0)]
+    queue: List[Tuple[str, int]] = [
+        (base_url, 0),
+        (base_url + "/about", 1),
+        (base_url + "/contact", 1),
+        (base_url + "/services", 1),
+]
 
     domain_host = urlparse(base_url).netloc.lower()
 
