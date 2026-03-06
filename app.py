@@ -59,5 +59,12 @@ def scan(
     if len(timestamps) >= RATE_LIMIT:
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
     timestamps.append(now)
+try:
     result = run_scan(request.domain)
     return result
+except Exception as e:
+    return {
+        "status": "error",
+        "error_code": "ENGINE_FAILURE",
+        "message": str(e)
+    }
