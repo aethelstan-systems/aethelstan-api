@@ -31,7 +31,7 @@ ENGINE_VERSION = "4.1"
 # Hardened crawl limits (v1 defaults)
 MAX_PAGES = 25
 MAX_DEPTH = 2
-REQUEST_TIMEOUT = 5  # seconds
+REQUEST_TIMEOUT = 3  # seconds
 MAX_BYTES = 1_000_000  # 1MB cap per page
 
 WEIGHTS = {
