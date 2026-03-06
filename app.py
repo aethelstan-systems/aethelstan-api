@@ -30,12 +30,15 @@ RATE_LIMIT = 10
 RATE_WINDOW = 60
 request_log = defaultdict(lambda: deque())
 
+
 class ScanRequest(BaseModel):
     domain: str
+
 
 # =========================
 # v1 ROUTES
 # =========================
+
 @app.get("/v1/health")
 def health():
     return {
@@ -43,28 +46,38 @@ def health():
         "version": "v1"
     }
 
+
 @app.post("/v1/scan")
 def scan(
     request: ScanRequest,
     request_obj: Request
 ):
+
     # -------------------------
     # Rate Limiting
     # -------------------------
     client_ip = request_obj.client.host
     now = time.time()
     timestamps = request_log[client_ip]
+
     while timestamps and now - timestamps[0] > RATE_WINDOW:
         timestamps.popleft()
+
     if len(timestamps) >= RATE_LIMIT:
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
+
     timestamps.append(now)
-try:
-    result = run_scan(request.domain)
-    return result
-except Exception as e:
-    return {
-        "status": "error",
-        "error_code": "ENGINE_FAILURE",
-        "message": str(e)
-    }
+
+    # -------------------------
+    # Run diagnostic
+    # -------------------------
+    try:
+        result = run_scan(request.domain)
+        return result
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "error_code": "ENGINE_FAILURE",
+            "message": str(e)
+        }
